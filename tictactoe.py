@@ -58,20 +58,30 @@ def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    # Creating a empty list for all posibles actions
+    # Createing a empty list for all posibles actions
     posible_worlds = list()
-    # Createing a board deep copy
-    board_copy = copy.deepcopy(board)
 
+    # Creating row and col indexes for posible actions
+    row_index = 0 
+    col_index = 0
     # Looping the length of rows
-    for row in len(board):
+    for row in board:
         # Looping the lenght of columns
-        for col in len(row):
+        for col in row:
             
             # If on this (row,col) is empty
             # Then add this coordenate to posible_worlds
-            if board_copy[row][col] == EMPTY:
-                posible_worlds.append((row,col))
+            if col == EMPTY:
+                posible_worlds.append((row_index,col_index))
+            
+            # Adding 1 in the col index
+            col_index += 1
+        
+        # Adding 1 in the row index
+        row_index += 1
+        # Reset the col_index
+        col_index = 0
+
 
     # Finally return all the actions
     return posible_worlds
@@ -138,9 +148,8 @@ def winner(board):
         elif n == -3:
             return O
 
-        # Else return None
-        else:
-            return None
+    # Else return None
+    return None
 
 
 def terminal(board):
@@ -159,7 +168,7 @@ def terminal(board):
 
             # If in this position (row,col) is empty
             # Then add 1 to the count variable
-            if board[row][col] != EMPTY:
+            if col != EMPTY:
                 positions_taken += 1
 
 
@@ -192,9 +201,89 @@ def utility(board):
     else:
         return 0
 
+# Creating max_value function
+def max_value(state):
+
+    # v is a variable of value negative infinite
+    v = -math.inf
+
+    # If state is a terminal state
+    # Then return the utility of that state 
+    if terminal(state) == True:
+        return utility(state)
+    
+    # Else loop the posible actions
+    for action in actions(state):
+
+        # Choose the max value between v and the minimun value choosed by the opponent
+        v = max(v, min_value(result(state, action)))
+    
+    # And return the value
+    return v
+
+
+# Creating min_value function
+def min_value(state):
+
+    # v is a variable of value positive infinite
+    v = math.inf
+
+    # If state is a terminal state
+    # Then return the utility of that state 
+    if terminal(state) == True:
+        return utility(state)
+    
+    # Else loop the posible actions
+    for action in actions(state):
+
+        # Choose the min value between v and the maximun value choosed by the opponent
+        v = min(v, max_value(result(state, action)))
+    
+    # And return the value
+    return v
+
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    # If it's a terminal state, then return None
+    if terminal(board):
+        return None
+    
+    # If current player is X, execute this
+    elif player(board) == X:
+        # Create an empty list for the next moves
+        next_moves = []
+
+        # Loop the posible actions
+        for action in actions(board):
+            # Add to next_moves list each move
+            # With the highest value, from the lowest values
+            # In this format: (action_value, action)
+            next_moves.append((min_value(result(board, action)), action))
+        
+        # Create a variable with the action with the highest action_value posible
+        best_move = sorted(next_moves, key=lambda x: x[0], reverse=True)[0][1]
+
+        # And return that action
+        return best_move
+    
+    # If current player is O, execute this
+    elif player(board) == O:
+        # Create an empty list for the next moves
+        next_moves = []
+
+        # Loop the posible actions
+        for action in actions(board):
+            # Add to next_moves list each move
+            # With the lowest value, from the highest values
+            # In this format: (action_value, action)
+            next_moves.append((max_value(result(board, action)), action))
+        
+        # Create a variable with the action with the lowest action_value posible
+        best_move = sorted(next_moves, key=lambda x: x[0])[0][1]
+
+        # And return that action
+        return best_move    
+
