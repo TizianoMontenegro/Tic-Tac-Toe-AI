@@ -58,8 +58,8 @@ def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    # Createing a empty list for all posibles actions
-    posible_worlds = list()
+    # Createing a empty set for all posibles actions
+    posible_worlds = set()
 
     # Creating row and col indexes for posible actions
     row_index = 0 
@@ -72,7 +72,7 @@ def actions(board):
             # If on this (row,col) is empty
             # Then add this coordenate to posible_worlds
             if col == EMPTY:
-                posible_worlds.append((row_index,col_index))
+                posible_worlds.add((row_index,col_index))
             
             # Adding 1 in the col index
             col_index += 1
@@ -91,10 +91,11 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
+    # Verify that action will be in the legal posible actions, and
     # Verify if action input position is not taken
-    if board[action[0]][action[1]] != EMPTY:
+    if action not in actions(board) or board[action[0]][action[1]] != EMPTY:
         # If, raise and exception
-        raise Exception("Action not valid")
+        raise Exception("ActionNotValid")
 
     # Create new board
     new_board = copy.deepcopy(board)
